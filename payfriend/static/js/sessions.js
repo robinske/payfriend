@@ -30,6 +30,7 @@ $(document).ready(function() {
 
   var redirectToTokenForm = function() {
     alert("Authorization denied.");
+    window.location.href = "/payments/send";
     // todo redirect to SMS form
   };
 });
