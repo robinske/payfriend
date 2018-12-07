@@ -7,7 +7,7 @@ Sample application that shows how to use Authy Push to validate actions like pay
 Sign up for a free Twilio account and create an Authy application in the  console:
 https://www.twilio.com/console/authy/applications
 
-Copy `.env.example` to `.env` and add your AUTHY_API_KEY.
+Copy `.env.example` to `.env` and add your `AUTHY_API_KEY`.
 
 <img width="775" alt="screen shot 2018-12-07 at 3 37 50 pm" src="https://user-images.githubusercontent.com/3673341/49674022-16a6ac80-fa36-11e8-9d28-fb7c8d9d62a1.png">
 
@@ -44,12 +44,12 @@ Or on Windows cmd:
 
 You'll need a publicly accessible route that Authy can access. Download [ngrok](https://ngrok.com/) and run:
 
-    ngrok
+    ngrok http 5000
 
 Copy the Forwarding url:
 <img width="757" alt="screen shot 2018-12-07 at 3 41 47 pm" src="https://user-images.githubusercontent.com/3673341/49674178-a3516a80-fa36-11e8-9b36-ddb7726e896e.png">
 
-Head back to the [Authy Console](https://www.twilio.com/console/authy/applications) and update your Application's Push Authentication Callback URL:
+Head back to the [Authy Console](https://www.twilio.com/console/authy/applications) and update your Application's Push Authentication callback URL with `/payments/callback` appended.
 
 <img width="1071" alt="screen shot 2018-12-07 at 3 44 42 pm" src="https://user-images.githubusercontent.com/3673341/49674279-0c38e280-fa37-11e8-910f-9ca15b27309e.png">
 
