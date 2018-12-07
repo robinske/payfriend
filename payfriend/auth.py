@@ -15,6 +15,7 @@ from flask import current_app as app
 from werkzeug.security import check_password_hash, generate_password_hash
 
 from payfriend.db import get_db
+from payfriend.forms import RegisterForm, LoginForm, VerifyForm
 from authy.api import AuthyApiClient
 
 
@@ -34,7 +35,6 @@ def login_required(view):
 
 
 def start_verification(country_code, number, channel='sms'):
-    print(channel)
     api = AuthyApiClient(app.config['AUTHY_API_KEY'])
     api.phones.verification_start(number, country_code, via=channel)
 
@@ -92,73 +92,66 @@ def register():
     Validates that the email is not already taken. Hashes the
     password for security.
     """
-    if request.method == 'POST':
-        email = request.form['email']
-        password = request.form['password']
-        full_phone = request.form['full_phone']
+    form = RegisterForm(request.form)
+
+    if form.validate_on_submit():
+        email = form.email.data
+        password = form.password.data
+        full_phone = form.full_phone.data
+        channel = form.channel.data
+
+        # Authy API requires separate country code
         pn = phonenumbers.parse(full_phone)
         phone = pn.national_number
         country_code = pn.country_code
-        channel = request.form['channel']
 
-        db = get_db()
-        error = None
+        session['phone'] = phone
+        session['country_code'] = country_code
+        session['email'] = email
+        try:
+            # use Authy API to send verification code to the user's phone
+            start_verification(country_code, phone, channel)
+            db = get_db()
+            db.execute(
+                'INSERT INTO users (email, password, phone_number) VALUES (?, ?, ?)',
+                (email, generate_password_hash(password), full_phone)
+            )
+            db.commit()
+            return redirect(url_for('auth.verify'))
+        except:
+            flash('Error sending phone verification.')
 
-        if not email:
-            error = 'Email is required.'
-        elif not phone:
-            error = 'Phone number is required'
-        elif not password:
-            error = 'Password is required.'
-        elif db.execute(
-            'SELECT id FROM users WHERE email = ?', (email,)
-        ).fetchone() is not None:
-            error = 'User {0} is already registered.'.format(email)
+    return render_template('auth/register.html', form=form)
 
-        if error is None:
-            session['phone'] = phone
-            session['country_code'] = country_code
-            session['email'] = email
-            try:
-                # use Authy API to send verification code to the user's phone
-                start_verification(country_code, phone, channel)
-                db.execute(
-                    'INSERT INTO users (email, password, phone_number) VALUES (?, ?, ?)',
-                    (email, generate_password_hash(password), full_phone)
-                )
-                db.commit()
-                return redirect(url_for('auth.verify'))
-            except:
-                error = 'Error sending phone verification.'
-
-        flash(error)
-    return render_template('auth/register.html')
 
 
 @bp.route('/verify', methods=('GET', 'POST'))
 def verify():
     """Verify a user on registration with their phone number"""
-    if request.method == 'POST':
+    form = VerifyForm(request.form)
+
+    if form.validate_on_submit():
         phone = session.get('phone')
         country_code = session.get('country_code')
-        code = request.form['code']
+        code = form.verification_code.data
 
         # use Authy API to check the verification code
         check_verification(country_code, phone, code)
-
         email = session.get('email')
         create_authy_user(email, country_code, phone)
         return redirect(url_for('auth.login'))
 
-    return render_template('auth/verify.html')
+    return render_template('auth/verify.html', form=form)
 
 
 @bp.route('/login', methods=('GET', 'POST'))
 def login():
     """Log in a registered user by adding the user id to the session."""
-    if request.method == 'POST':
-        email = request.form['email']
-        password = request.form['password']
+    form = LoginForm(request.form)
+
+    if form.validate_on_submit():
+        email = form.email.data
+        password = form.password.data
         db = get_db()
         error = None
         user = db.execute(
@@ -180,7 +173,7 @@ def login():
 
         flash(error)
 
-    return render_template('auth/login.html')
+    return render_template('auth/login.html', form=form)
 
 
 @bp.route('/logout')

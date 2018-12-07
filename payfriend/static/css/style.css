@@ -98,12 +98,12 @@ button[type="submit"] {
   cursor: pointer;
   margin-top: 10px;
 }
-input[type="tel"] {
+input[type="text"] {
   width: 100%;
   border-radius: 10px;
 }
 .intl-tel-input {
-  margin-bottom: 10px;
+  margin-bottom: 15px;
 }
 .auth-ot {
   display:none;
@@ -117,4 +117,11 @@ th, td {
 }
 th {
   text-align: left;
+}
+form ul {
+  list-style-type: none;
+}
+#channel {
+  margin: 0;
+  padding: 0;
 }

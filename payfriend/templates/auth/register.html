@@ -10,16 +10,16 @@
 <h1>{% block title %}Register{% endblock %}</h1>
 {% endblock %} 
 {% block content %}
-<form method="post">
-  <label for="email">Email</label>
-  <input type="email" name="email" id="email" required />
-  <label for="password">Password</label>
-  <input type="password" name="password" id="password" required />
-  <label for="phone">Phone number</label>
-  <input type="tel" name="phone" id="phone" required />
-  <label for="channel">Verification method:</label>
-  <label><input type="radio" name="channel" value="sms" checked />SMS</label>
-  <label><input type="radio" name="channel" value="call" />Call</label>
+<form method="POST">
+  {{ form.hidden_tag() }}
+
+  {% from "_formhelpers.html" import render_field %}
+
+  {{ render_field(form.email) }}
+  {{ render_field(form.password) }}
+  {{ render_field(form.phone_number, id="phone") }}
+  {{ render_field(form.channel) }}
+
   <button name="form-submit" type="submit">Sign Up</button>
 </form>
 <script src="{{ url_for('static',filename='js/intlTelInput.js') }}"></script>

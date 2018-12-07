@@ -5,16 +5,12 @@
   </h1>
 {% endblock %} 
 {% block content %}
-<form accept-charset="UTF-8" method="post">
-  <div class="row">
-    <div class="col-25">
-      <label>Enter your code:</label></div>
-    <div class="col-75">
-      <input name="code" id="code" type="number"></select>
-    </div>
-  </div>
-  <div class="row">
-    <button name="button" type="submit">Verify</button>
-  </div>
+<form method="POST">
+  {{ form.hidden_tag() }}
+
+  {% from "_formhelpers.html" import render_field %}
+
+  {{ render_field(form.verification_code) }}
+  <button name="form-submit" type="submit">Submit</button>
 </form>
 {% endblock %}

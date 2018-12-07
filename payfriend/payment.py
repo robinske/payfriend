@@ -12,6 +12,7 @@ from flask import (
 )
 from flask import current_app as app
 from payfriend.db import get_db
+from payfriend.forms import PaymentForm
 from payfriend.auth import login_required
 
 
@@ -21,7 +22,7 @@ bp = Blueprint('payments', __name__, url_prefix='/payments')
 def push_auth(authy_id, send_to, amount):
     details = {
         "Sending to": send_to,
-        "Transaction amount": amount
+        "Transaction amount": str(amount)
     }
 
     message = "Please authorize payment to {}".format(send_to)
@@ -76,12 +77,15 @@ def callback():
 @bp.route('/send', methods=["GET", "POST"])
 @login_required
 def send():
-    if request.method == "POST":
-        sendto = request.form['sendto']
-        amount = request.form['amount']
+    form = PaymentForm(request.form)
+    print(dir(form))
+
+    if form.validate_on_submit():
+        send_to = form.send_to.data
+        amount = form.amount.data
         authy_id = session['authy_id']
 
-        request_id = push_auth(authy_id, sendto, amount)
+        request_id = push_auth(authy_id, send_to, amount)
         if request_id:
             return jsonify({
                 "success": True,
@@ -90,7 +94,7 @@ def send():
         else:
             return jsonify({"success": False})
 
-    return render_template("payments/send.html")
+    return render_template("payments/send.html", form=form)
 
 
 @bp.route('/status', methods=["GET", "POST"])

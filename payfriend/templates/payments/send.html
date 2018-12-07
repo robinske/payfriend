@@ -3,12 +3,14 @@
 <h1>{% block title %}Send a payment{% endblock %}</h1>
 {% endblock %} 
 {% block content %} 
-<form method="post" id="send-payment-form">
-  <label for="sendto">Sending to</label>
-  <input name="sendto" id="sendto" required />
-  <label for="amount">Amount</label>
-  <input type="number" name="amount" id="amount" required />
-  <button name="form-submit" type="submit">Send</button>
+<form method="POST" id="send-payment-form">
+  {{ form.hidden_tag() }}
+
+  {% from "_formhelpers.html" import render_field %}
+
+  {{ render_field(form.send_to) }}
+  {{ render_field(form.amount) }}
+  <button name="form-submit" type="submit">Submit</button>
 </form>
 <div class='auth-ot'>
   Waiting for OneTouch Approval ...
