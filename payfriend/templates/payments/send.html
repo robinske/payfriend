@@ -1,0 +1,17 @@
+{% extends 'base.html' %} 
+{% block header %}
+<h1>{% block title %}Send a payment{% endblock %}</h1>
+{% endblock %} 
+{% block content %} 
+<form method="post" id="send-payment-form">
+  <label for="sendto">Sending to</label>
+  <input name="sendto" id="sendto" required />
+  <label for="amount">Amount</label>
+  <input type="number" name="amount" id="amount" required />
+  <button name="form-submit" type="submit">Send</button>
+</form>
+<div class='auth-ot'>
+  Waiting for OneTouch Approval ...
+</div>
+<script src="{{ url_for('static', filename='js/sessions.js') }}""></script>
+{% endblock %}
