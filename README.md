@@ -1,6 +1,6 @@
 # Payment Authorization with Authy
 
-Sample application that shows how to use Authy Push to validate actions like payment transactions.
+Sample application that shows how to use Authy push authorization to validate actions like payment transactions.
 
 ## Create an Authy Application
 
