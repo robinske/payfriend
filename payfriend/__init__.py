@@ -1,39 +1,25 @@
 import os
-
-from flask import Flask, render_template, g
-
+from config import config
 from dotenv import load_dotenv, find_dotenv
+from flask import Flask, render_template, g
+from flask_sqlalchemy import SQLAlchemy
 
 
-def create_app(test_config=None):
+db = SQLAlchemy()
+
+
+def create_app():
     """Create and configure an instance of the Flask application."""
-    app = Flask(__name__, instance_relative_config=True)
-    app.config.from_mapping(
-        # store the database in the instance folder
-        DATABASE=os.path.join(app.instance_path, 'payfriend.sqlite'),
-    )
+    app = Flask(__name__)
 
     load_dotenv(find_dotenv())
+    config_name = os.environ.get('FLASK_ENV', 'default')
+    app.config.from_object(config[config_name])
 
-    try:
-        # Secret key
-        app.secret_key = os.environ['SECRET_KEY']
-
-        # Authy API key
-        app.config['AUTHY_API_KEY'] = os.environ['AUTHY_API_KEY']
-    except KeyError:
-        raise Exception(
-            'Missing environment variables. See .env.example for details')
-
-    # ensure the instance folder exists
-    try:
-        os.makedirs(app.instance_path)
-    except OSError:
-        pass
-
-    # register the database commands
-    from payfriend import db
+    # register the database
+    from payfriend import models
     db.init_app(app)
+    db.create_all(app=app)
 
     @app.route('/')
     def index():
@@ -41,8 +27,8 @@ def create_app(test_config=None):
 
     @app.route('/users')
     def list_users():
-        database = db.get_db()
-        users = database.execute('SELECT * FROM users').fetchall()
+        from payfriend.models import User
+        users = User.query.all()
         return render_template('users.html', users=users)
 
     # apply the blueprints to the app
@@ -58,3 +44,5 @@ def create_app(test_config=None):
     app.register_error_handler(500, error.internal_error)
 
     return app
+
+

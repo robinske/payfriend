@@ -10,10 +10,14 @@
 
   {{ render_field(form.send_to) }}
   {{ render_field(form.amount) }}
-  <button name="form-submit" type="submit">Submit</button>
+  <input type="hidden" name="send-payment-submit" value=""/>
+  <button type="submit">Submit</button>
 </form>
 <div class='auth-ot'>
   Waiting for OneTouch Approval ...
 </div>
+<form style="display: hidden" method="POST" id="redirect_to">
+  <input type="hidden" id="redirect_message" name="redirect_message" value=""/>
+</form>
 <script src="{{ url_for('static', filename='js/sessions.js') }}""></script>
 {% endblock %}

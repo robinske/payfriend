@@ -13,11 +13,11 @@
   </tr>
 {% for payment in payments %}
 <tr>
-  <td>{{ payment["request_id"] }}</td>
-  <td>{{ payment["authy_id"] }}</td>
-  <td>{{ payment["send_to"] }}</td>
-  <td>{{ "${:,.2f}".format(payment["amount"]) }}</td> 
-  <td>{{ payment["status"] }}</td>
+  <td>{{ payment.id }}</td>
+  <td>{{ payment.authy_id }}</td>
+  <td>{{ payment.send_to }}</td>
+  <td>{{ "${:,.2f}".format(payment.amount) }}</td> 
+  <td>{{ payment.status }}</td>
 </tr>
 {% endfor %} 
 </table>

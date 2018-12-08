@@ -6,7 +6,7 @@ from wtforms import (
     StringField, 
     validators
 )
-from payfriend.db import get_db
+from payfriend import db
 
 
 class RegisterForm(FlaskForm):
@@ -28,14 +28,14 @@ class RegisterForm(FlaskForm):
         default='sms')
 
     def create_user(self, authy_user_id):
-        db.execute(
-            'INSERT INTO users (email, password, phone_number, authy_id) VALUES (?, ?, ?, ?)',
-            (self.email.data, 
-             generate_password_hash(self.password.data), 
-             self.full_phone,
-             authy_user_id))
-        db.commit()
-        return authy_user_id
+        user = User(self.email.data, self.password.data, 
+                    self.phone_number.data, authy_user_id)
+
+        # Save the user
+        db.session.add(user)
+        db.session.commit()
+        db.session.refresh(user)
+        return user
 
 
 class LoginForm(FlaskForm):

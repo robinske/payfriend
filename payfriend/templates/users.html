@@ -9,7 +9,6 @@
     <th>Email</th>
     <th>Phone Number</th>
     <th>Authy ID</th>
-    <th>Verified</th>
   </tr>
 {% for user in users %}
 <tr>
@@ -17,11 +16,6 @@
   <td>{{ user["email"] }}</td>
   <td>{{ user["phone_number"] }}</td>
   <td>{{ user["authy_id"] }}</td>
-  <td>{% if user["verified"] == 0 %} 
-    true 
-  {% else %} 
-    false
-  {% endif %}</td>
 </tr>
 {% endfor %} 
 </table>

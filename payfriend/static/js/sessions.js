@@ -10,8 +10,6 @@ $(document).ready(function() {
       if (data.success) {
         $(".auth-ot").fadeIn();
         checkForOneTouch(data.request_id);
-      } else {
-        redirectToTokenForm();
       }
     });
   };
@@ -19,18 +17,20 @@ $(document).ready(function() {
   var checkForOneTouch = function(request_id) {
     $.get("/payments/status?request_id=" + request_id, function(data) {
       if (data == "approved") {
-        window.location.href = "/payments";
+        redirectTo('/payments/', 'Your payment has been approved!')
       } else if (data == "denied") {
-        redirectToTokenForm();
+        redirectTo('/payments/send', 'Your payment request has been denied.');
       } else {
         setTimeout(checkForOneTouch(request_id), 2000);
       }
     });
   };
 
-  var redirectToTokenForm = function() {
-    alert("Authorization denied.");
-    window.location.href = "/payments/send";
+  var redirectTo = function(location, message) {
+    var form = $("#redirect_to");
+    $("#redirect_message").val(message);
+    form.attr('action', location)
+    form.submit();
     // todo redirect to SMS form
   };
 });
