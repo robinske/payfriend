@@ -47,16 +47,6 @@ def check_verification(country_code, phone, code):
         flash("Error validating code: {}".format(e))
 
 
-def create_authy_user(email, country_code, phone):
-    api = AuthyApiClient(app.config['AUTHY_API_KEY'])
-    authy_user = api.users.create(email, phone, country_code)
-    if authy_user.ok():
-        return authy_user.id
-    else:
-        flash("Error creating Authy user: {}".format(authy_user.errors()))
-        return None
-
-
 @bp.before_app_request
 def load_logged_in_user():
     """If a user id is stored in the session, load the user object from
@@ -121,12 +111,9 @@ def verify():
         # use Authy API to check the verification code
         check_verification(country_code, phone, code)
         
-        # if verification passes, create the authy user
-        authy_id = create_authy_user(email, country_code, phone)
-
         # update the database with the authy id
         user = User.query.filter_by(email=email).first()
-        user.authy_id = authy_id
+        user.verified = True
         db.session.commit()
 
         return redirect(url_for('auth.login'))
@@ -155,7 +142,6 @@ def login():
             # redirect to payments
             session.clear()
             session['user_id'] = user.id
-            session['authy_id'] = user.authy_id
             return redirect(url_for('payments.send'))
 
         flash(error)

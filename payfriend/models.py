@@ -12,7 +12,7 @@ class User(db.Model):
     email = db.Column(db.String(64), unique=True, index=True)
     password_hash = db.Column(db.String(128))
     phone_number = db.Column(db.String(30))
-    authy_id = db.Column(db.Integer)
+    verified = db.Column(db.Boolean, default=False)
 
     def __init__(self, email, password, phone_number):
         self.email = email
@@ -40,24 +40,15 @@ class Payment(db.Model):
     """
     __tablename__ = 'payments'
 
-    AUTHY_STATUSES = (
-        'pending',
-        'approved',
-        'denied'
-    )
-
-    id = db.Column(db.String(128), primary_key=True)
-    authy_id = db.Column(db.Integer, db.ForeignKey('users.authy_id'))
+    id = db.Column(db.Integer, primary_key=True)
+    user_id = db.Column(db.Integer, db.ForeignKey('users.id'))
     send_to = db.Column(db.String(128))
     amount = db.Column(db.Integer)
-    status = db.Column(db.Enum(*AUTHY_STATUSES, name='authy_statuses'))
 
-    def __init__(self, request_id, authy_id, send_to, amount, status='pending'):
-        self.id = request_id
-        self.authy_id = authy_id
+    def __init__(self, user_id, send_to, amount):
+        self.user_id = user_id
         self.send_to = send_to
         self.amount = amount
-        self.status = status
     
     def __repr__(self):
         return '<Payment %r>' % self.id

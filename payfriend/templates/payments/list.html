@@ -5,19 +5,15 @@
 {% block content %} 
 <table style="width:100%">
   <tr>
-    <th>UUID</th>
-    <th>Authy ID</th>
+    <th>User</th>
     <th>Sent to</th>
     <th>Amount</th>
-    <th>Status</th>
   </tr>
 {% for payment in payments %}
 <tr>
-  <td>{{ payment.id }}</td>
-  <td>{{ payment.authy_id }}</td>
+  <td>{{ payment.email }}</td>
   <td>{{ payment.send_to }}</td>
   <td>{{ "${:,.2f}".format(payment.amount) }}</td> 
-  <td>{{ payment.status }}</td>
 </tr>
 {% endfor %} 
 </table>
