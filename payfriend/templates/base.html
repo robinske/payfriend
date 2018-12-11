@@ -1,6 +1,6 @@
 <!DOCTYPE html> 
 <title>
-  {% block title %}{% endblock %} - Payfriend
+  Payfriend
 </title>
 <head>
   {% block head %}
@@ -20,6 +20,7 @@
       <span>Welcome, {{ g.user["email"] }}</span>
     </li>
     <li><a href="/payments">My Payments</a></li>
+    <li><a href="/payments/send">Send a Payment</a></li>
     <li><a href="{{ url_for('auth.logout') }}">Log Out</a></li>
     {% else %}
     <li><a href="{{ url_for('auth.register') }}">Register</a></li>

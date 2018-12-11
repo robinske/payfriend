@@ -17,18 +17,18 @@ $(document).ready(function() {
   var checkForOneTouch = function(request_id) {
     $.get("/payments/status?request_id=" + request_id, function(data) {
       if (data == "approved") {
-        redirectTo('/payments/', 'Your payment has been approved!')
+        redirectWithMessage('/payments/', 'Your payment has been approved!')
       } else if (data == "denied") {
-        redirectTo('/payments/send', 'Your payment request has been denied.');
+        redirectWithMessage('/payments/send', 'Your payment request has been denied.');
       } else {
         setTimeout(checkForOneTouch(request_id), 2000);
       }
     });
   };
 
-  var redirectTo = function(location, message) {
+  var redirectWithMessage = function(location, message) {
     var form = $("#redirect_to");
-    $("#redirect_message").val(message);
+    $("#flash_message").val(message);
     form.attr('action', location)
     form.submit();
     // todo redirect to SMS form
