@@ -13,6 +13,7 @@ from . import utils
 from payfriend import db
 from payfriend.forms import RegisterForm, LoginForm, VerifyForm
 from payfriend.models import User
+from payfriend.payment import check_sms_auth
 
 
 bp = Blueprint('auth', __name__, url_prefix='/auth')
@@ -65,31 +66,41 @@ def register():
     return render_template('auth/register.html', form=form)
 
 
+def handle_verified_user(country_code, phone, code):
+    """
+    After user verifies their phone number, create the Authy user
+    and update the database with their Authy ID.
+    """
+    # if verification passes, create the authy user
+    authy_id = utils.create_authy_user(email, country_code, phone)
+
+    # update the database with the authy id
+    user = User.query.filter_by(email=email).first()
+    user.authy_id = authy_id
+    db.session.commit()
+    return redirect(url_for('payments.send'))
+
 
 @bp.route('/verify', methods=('GET', 'POST'))
 def verify():
     """
-    Verify a user on registration with their phone number
+    Generic endpoint to verify a code entered by the user.
     """
     form = VerifyForm(request.form)
+    validated = form.validate_on_submit()
 
     if form.validate_on_submit():
         email = g.user.email
         (country_code, phone) = utils.parse_phone_number(g.user.phone_number)
         code = form.verification_code.data
 
-        # use Authy API to check the verification code
-        if utils.check_verification(country_code, phone, code):
-            # if verification passes, create the authy user
-            authy_id = utils.create_authy_user(email, country_code, phone)
-
-            # update the database with the authy id
-            user = User.query.filter_by(email=email).first()
-            user.authy_id = authy_id
-            db.session.commit()
-            return redirect(url_for('payments.send'))
-
-    return render_template('auth/verify.html', form=form)
+        # route based on the type of verification
+        if not g.user.authy_id:
+            if utils.check_phone_verification(country_code, phone, code):
+                return handle_verified_user(country_code, phone, code)
+        else:
+            return check_sms_auth(g.user.authy_id, code)
+    return render_template('auth/verify.html', form=form, title)
 
 
 @bp.route('/login', methods=('GET', 'POST'))

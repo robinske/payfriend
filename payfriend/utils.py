@@ -82,7 +82,48 @@ def create_authy_user(email, country_code, phone):
         return None
 
 
+def send_sms_auth(authy_id, request_id):
+    """
+    Sends an SMS one time password (OTP) to the user's phone_number
+
+    :returns (sms_id, errors): tuple of sms_id (if successful)
+                               and errors dict (if unsuccessful)
+    """
+    api = get_authy_client()
+    resp = api.users.request_sms(authy_id, {'force': True})
+    if resp.ok():
+        flash(resp.content['message'])
+        return True
+    else:
+        flash(resp.errors()['message'])
+        return False
+
+
+def check_sms_auth(authy_id, code):
+    """
+    Validates an one time password (OTP)
+    """
+    api = get_authy_client()
+    try: 
+        resp = api.tokens.verify(authy_id, code)
+        if resp.ok():
+            flash(resp.content['message'])
+            return True
+        else:
+            flash(resp.errors()['message'])
+    except Exception as e:
+        flash("Error validating code: {}".format(e))
+    
+    return False
+
+
 def send_push_auth(authy_id_str, send_to, amount):
+    """
+    Sends a push authorization with payment details to the user's Authy app
+
+    :returns (request_id, errors): tuple of request_id (if successful)
+                                   and errors dict (if unsuccessful)
+    """
     details = {
         "Sending to": send_to,
         "Transaction amount": str(amount)
@@ -100,4 +141,5 @@ def send_push_auth(authy_id_str, send_to, amount):
         request_id = resp.content['approval_request']['uuid']
         return (request_id, {})
     else:
+        flash(resp.errors()['message'])
         return (None, resp.errors())

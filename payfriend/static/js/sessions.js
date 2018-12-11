@@ -10,6 +10,12 @@ $(document).ready(function() {
       if (data.success) {
         $(".auth-ot").fadeIn();
         checkForOneTouch(data.request_id);
+        
+        // display SMS option after 15 seconds
+        setTimeout(function() {
+          $("#request_id").val(data.request_id);
+          $(".auth-sms").fadeIn();
+        }, 15000);
       }
     });
   };
@@ -21,7 +27,7 @@ $(document).ready(function() {
       } else if (data == "denied") {
         redirectWithMessage('/payments/send', 'Your payment request has been denied.');
       } else {
-        setTimeout(checkForOneTouch(request_id), 2000);
+        setTimeout(checkForOneTouch(request_id), 3000);
       }
     });
   };
@@ -31,6 +37,5 @@ $(document).ready(function() {
     $("#flash_message").val(message);
     form.attr('action', location)
     form.submit();
-    // todo redirect to SMS form
   };
 });

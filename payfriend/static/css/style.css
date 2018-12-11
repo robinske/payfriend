@@ -105,8 +105,8 @@ input[type="text"] {
 .intl-tel-input {
   margin-bottom: 15px;
 }
-.auth-ot {
-  display:none;
+.auth-ot, .auth-sms {
+  display: none;
 }
 table, th, td {
   border: 1px solid gray;
@@ -124,4 +124,14 @@ form ul {
 #channel {
   margin: 0;
   padding: 0;
+}
+button[id="send-sms"] {
+  background-color: gray;
+  color: white;
+  padding: 12px 20px;
+  border: none;
+  font-size: 18px;
+  border-radius: 4px;
+  cursor: pointer;
+  margin-top: 20px;
 }

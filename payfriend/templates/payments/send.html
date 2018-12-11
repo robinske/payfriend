@@ -16,6 +16,12 @@
 <div class='auth-ot'>
   Waiting for OneTouch Approval ...
 </div>
+<div class='auth-sms'>
+  <form method="POST" action="/payments/auth/sms" name="send-sms-form">
+    <input type="hidden" id="request_id" name="request_id" value=""/>
+    <button id="send-sms">Having trouble? Request an SMS authentication token instead.</button>
+  </form>
+</div>
 <form style="display: hidden" method="POST" id="redirect_to">
   <input type="hidden" id="flash_message" name="flash_message" value=""/>
 </form>

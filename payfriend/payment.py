@@ -37,10 +37,17 @@ def load_logged_in_user():
 
     if user_id is None:
         g.user = None
-    else:
-        g.user = User.query.filter_by(id=user_id).first()
 
-        
+
+def update_payment_status(request_id, status):
+    payment = Payment.query.filter_by(id=request_id).first()
+
+    if not payment:
+        abort(404)
+
+    payment.status = status
+    db.session.commit()
+
 
 @bp.route('/callback', methods=["POST"])
 @verify_authy_request
@@ -52,20 +59,8 @@ def callback():
     request_id = request.json.get('uuid')
     status = request.json.get('status')
 
-    payment = Payment.query.filter_by(id=request_id).first()
-
-    if not payment:
-        abort(404)
-
-    payment.status = status
-    db.session.commit()
-    
-    if status == 'approved':
-        return ('Successfully authorized payment {}'.format(request_id), 200)
-    if status == 'denied':
-        return ('Payment authorization denied.', 200)
-
-    abort(400)
+    update_payment_status(request_id, status)
+    return ('', 200)
 
 
 @bp.route('/status', methods=["GET", "POST"])
@@ -88,7 +83,7 @@ def send():
     if form.validate_on_submit():
         send_to = form.send_to.data
         amount = form.amount.data
-        authy_id = session.get('authy_id')
+        authy_id = g.user.authy_id
 
         (request_id, errors) = utils.send_push_auth(authy_id, send_to, amount)
         if request_id:
@@ -126,3 +121,27 @@ def list_payments():
         })
 
     return render_template('payments/list.html', payments=payments)
+
+
+def check_sms_auth(authy_id, code):
+    if utils.check_sms_auth(g.user.authy_id, code):
+        request_id = session['request_id']
+        update_payment_status(request_id, 'approved')
+        return redirect(url_for('payments.list_payments'))
+    else:
+        abort(400)
+
+
+@bp.route('/auth/sms', methods=["POST"])
+@login_required
+def sms_auth():
+    if not g.user.authy_id:
+        return(redirect(url_for('auth.verify')))
+
+    request_id = request.form['request_id']
+    session['request_id'] = request_id
+    
+    if utils.send_sms_auth(g.user.authy_id, request_id):
+        return redirect(url_for('auth.verify'))
+    else:
+        return redirect(url_for('payments.send'))
