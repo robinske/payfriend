@@ -100,7 +100,7 @@ def verify():
                 return handle_verified_user(country_code, phone, code)
         else:
             return check_sms_auth(g.user.authy_id, code)
-    return render_template('auth/verify.html', form=form, title)
+    return render_template('auth/verify.html', form=form)
 
 
 @bp.route('/login', methods=('GET', 'POST'))

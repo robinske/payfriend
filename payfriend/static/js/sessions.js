@@ -5,10 +5,14 @@ $(document).ready(function() {
     attemptOneTouchVerification(formData);
   });
 
+  $(".modal-close").click(function() {
+    alert("handler for .modal-close called.")
+  })
+
   var attemptOneTouchVerification = function(form) {
     $.post("/payments/send", form, function(data) {
       if (data.success) {
-        $(".auth-ot").fadeIn();
+        $(".modal").fadeIn();
         checkForOneTouch(data.request_id);
         
         // display SMS option after 15 seconds
