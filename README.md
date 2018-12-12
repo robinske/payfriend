@@ -2,6 +2,8 @@
 
 Sample application that shows how to use Authy push authorization to validate actions like payment transactions.
 
+![](https://s3-us-west-1.amazonaws.com/krobinson.me/files/payfriend.gif)
+
 ## Create an Authy Application
 
 Sign up for a free Twilio account and create an Authy application in the  console:
