@@ -90,7 +90,12 @@ def send_sms_auth(authy_id, request_id):
                                and errors dict (if unsuccessful)
     """
     api = get_authy_client()
-    resp = api.users.request_sms(authy_id, {'force': True})
+    options = {
+        'force': True,
+        'action': request_id,
+        'action_message': 'Payment Verification Code'
+    }
+    resp = api.users.request_sms(authy_id, options)
     if resp.ok():
         flash(resp.content['message'])
         return True
@@ -99,13 +104,17 @@ def send_sms_auth(authy_id, request_id):
         return False
 
 
-def check_sms_auth(authy_id, code):
+def check_sms_auth(authy_id, request_id, code):
     """
     Validates an one time password (OTP)
     """
     api = get_authy_client()
     try: 
-        resp = api.tokens.verify(authy_id, code)
+        options = {
+            'force': True,
+            'action': request_id,
+        }
+        resp = api.tokens.verify(authy_id, code, options)
         if resp.ok():
             flash(resp.content['message'])
             return True

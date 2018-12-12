@@ -99,7 +99,8 @@ def verify():
             if utils.check_verification(country_code, phone, code):
                 return handle_verified_user(email, country_code, phone, code)
         else:
-            return check_sms_auth(g.user.authy_id, code)
+            request_id = session.get('request_id')
+            return check_sms_auth(g.user.authy_id, request_id, code)
     return render_template('auth/verify.html', form=form)
 
 

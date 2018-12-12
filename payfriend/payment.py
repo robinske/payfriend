@@ -123,9 +123,8 @@ def list_payments():
     return render_template('payments/list.html', payments=payments)
 
 
-def check_sms_auth(authy_id, code):
-    if utils.check_sms_auth(g.user.authy_id, code):
-        request_id = session['request_id']
+def check_sms_auth(authy_id, request_id, code):
+    if utils.check_sms_auth(g.user.authy_id, request_id, code):
         update_payment_status(request_id, 'approved')
         return redirect(url_for('payments.list_payments'))
     else:
