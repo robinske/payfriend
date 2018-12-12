@@ -105,9 +105,6 @@ input[type="text"] {
 .intl-tel-input {
   margin-bottom: 15px;
 }
-.auth-ot, .auth-sms {
-  display: none;
-}
 table, th, td {
   border: 1px solid gray;
   border-collapse: collapse;
@@ -134,4 +131,7 @@ button[id="send-sms"] {
   border-radius: 4px;
   cursor: pointer;
   margin-top: 20px;
+}
+.auth-ot, .auth-sms {
+  display: none;
 }
