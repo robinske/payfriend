@@ -2,7 +2,7 @@
 
 Sample application that shows how to use Authy push authorization to validate actions like payment transactions.
 
-![](https://s3-us-west-1.amazonaws.com/krobinson.me/files/payfriend.gif)
+[Demo video showing how the application works](https://s3-us-west-1.amazonaws.com/krobinson.me/files/payfriend.gif)
 
 ## Create an Authy Application
 
