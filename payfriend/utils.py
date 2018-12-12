@@ -1,7 +1,7 @@
 import phonenumbers
 from authy.api import AuthyApiClient
 from flask import current_app as app
-from flask import flash
+from flask import flash, g, request
 
 
 def parse_phone_number(full_phone):
@@ -126,15 +126,24 @@ def send_push_auth(authy_id_str, send_to, amount):
     """
     details = {
         "Sending to": send_to,
-        "Transaction amount": str(amount)
+        "Transaction amount": str('${:,.2f}'.format(amount))
     }
+
+    hidden_details = {
+        "user_ip_address": request.environ.get('REMOTE_ADDR', request.remote_addr),
+        "requester_user_id": str(g.user.id)
+    }
+
+    logos = [dict(res = 'default', url = 'https://emojipedia-us.s3.dualstack.us-west-1.amazonaws.com/thumbs/120/apple/155/money-bag_1f4b0.png')]
 
     api = get_authy_client()
     resp = api.one_touch.send_request(
         user_id=int(authy_id_str),
         message="Please authorize payment to {}".format(send_to),
         seconds_to_expire=1200,
-        details=details
+        details=details,
+        hidden_details=hidden_details,
+        logos=logos
     )
 
     if resp.ok():

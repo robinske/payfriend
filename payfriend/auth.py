@@ -66,7 +66,7 @@ def register():
     return render_template('auth/register.html', form=form)
 
 
-def handle_verified_user(country_code, phone, code):
+def handle_verified_user(email, country_code, phone, code):
     """
     After user verifies their phone number, create the Authy user
     and update the database with their Authy ID.
@@ -96,8 +96,8 @@ def verify():
 
         # route based on the type of verification
         if not g.user.authy_id:
-            if utils.check_phone_verification(country_code, phone, code):
-                return handle_verified_user(country_code, phone, code)
+            if utils.check_verification(country_code, phone, code):
+                return handle_verified_user(email, country_code, phone, code)
         else:
             return check_sms_auth(g.user.authy_id, code)
     return render_template('auth/verify.html', form=form)
