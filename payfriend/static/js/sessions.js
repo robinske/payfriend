@@ -9,25 +9,25 @@ $(document).ready(function() {
     $.post("/payments/send", form, function(data) {
       if (data.success) {
         $(".auth-ot").fadeIn();
-        checkForOneTouch(data.request_id);
+        checkForOneTouch(data.payment_id);
         
         // display SMS option after 15 seconds
         setTimeout(function() {
-          $("#request_id").val(data.request_id);
+          $("#payment_id").val(data.payment_id);
           $(".auth-sms").fadeIn();
         }, 15000);
       }
     });
   };
 
-  var checkForOneTouch = function(request_id) {
-    $.get("/payments/status?request_id=" + request_id, function(data) {
+  var checkForOneTouch = function(payment_id) {
+    $.get("/payments/status?payment_id=" + payment_id, function(data) {
       if (data == "approved") {
         redirectWithMessage('/payments/', 'Your payment has been approved!')
       } else if (data == "denied") {
         redirectWithMessage('/payments/send', 'Your payment request has been denied.');
       } else {
-        setTimeout(checkForOneTouch(request_id), 3000);
+        setTimeout(checkForOneTouch(payment_id), 3000);
       }
     });
   };

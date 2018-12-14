@@ -1,3 +1,4 @@
+import uuid
 from authy.api import AuthyApiClient
 from flask import (
     abort,
@@ -39,9 +40,8 @@ def load_logged_in_user():
         g.user = None
 
 
-def update_payment_status(request_id, status):
-    payment = Payment.query.filter_by(id=request_id).first()
-
+def update_payment_status(payment_id, status):
+    payment = Payment.query.get(payment_id)
     if not payment:
         abort(404)
 
@@ -75,10 +75,11 @@ def callback():
     Used by Twilio to send a notification when the user 
     approves or denies a push authorization in the Authy app
     """
-    request_id = request.json.get('uuid')
+    push_id = request.json.get('uuid')
     status = request.json.get('status')
+    payment = Payment.query.filter_by(push_id=push_id).first()
 
-    update_payment_status(request_id, status)
+    update_payment_status(payment.id, status)
     return ('', 200)
 
 
@@ -88,8 +89,8 @@ def status():
     """
     Used by AJAX requests to check the OneTouch verification status of a payment
     """
-    request_id = request.args.get('request_id')
-    payment = Payment.query.filter_by(id=request_id).first()
+    payment_id = request.args.get('payment_id')
+    payment = Payment.query.get(payment_id)
     return payment.status
 
 
@@ -104,14 +105,17 @@ def send():
         amount = form.amount.data
         authy_id = g.user.authy_id
 
-        (request_id, errors) = utils.send_push_auth(authy_id, send_to, amount)
-        if request_id:
-            payment = Payment(request_id, authy_id, send_to, amount)
+        # create a unique ID we can use to track payment status
+        payment_id = str(uuid.uuid4())
+
+        (push_id, errors) = utils.send_push_auth(authy_id, send_to, amount)
+        if push_id:
+            payment = Payment(payment_id, authy_id, send_to, amount, push_id)
             db.session.add(payment)
             db.session.commit()
             return jsonify({
                 "success": True,
-                "request_id": request_id
+                "payment_id": payment_id
             })
         else:
             flash("Error sending authorization. {}".format(errors))
@@ -128,9 +132,9 @@ def list_payments():
     return render_template('payments/list.html', payments=payments)
 
 
-def check_sms_auth(authy_id, request_id, code):
-    if utils.check_sms_auth(g.user.authy_id, request_id, code):
-        update_payment_status(request_id, 'approved')
+def check_sms_auth(authy_id, payment_id, code):
+    if utils.check_sms_auth(g.user.authy_id, payment_id, code):
+        update_payment_status(payment_id, 'approved')
         return redirect(url_for('payments.list_payments'))
     else:
         abort(400)
@@ -142,9 +146,9 @@ def sms_auth():
     if not g.user.authy_id:
         return(redirect(url_for('auth.verify')))
 
-    request_id = request.form['request_id']
-    session['request_id'] = request_id
-    payment = Payment.query.get(request_id)
+    payment_id = request.form['payment_id']
+    session['payment_id'] = payment_id
+    payment = Payment.query.get(payment_id)
     
     if utils.send_sms_auth(payment):
         return redirect(url_for('auth.verify'))

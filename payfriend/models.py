@@ -50,13 +50,16 @@ class Payment(db.Model):
     authy_id = db.Column(db.Integer, db.ForeignKey('users.authy_id'))
     send_to = db.Column(db.String(128))
     amount = db.Column(db.Integer)
+    push_id = db.Column(db.String(128))
     status = db.Column(db.Enum(*AUTHY_STATUSES, name='authy_statuses'))
 
-    def __init__(self, request_id, authy_id, send_to, amount, status='pending'):
-        self.id = request_id
+    def __init__(self, id, authy_id, send_to, amount, push_id, 
+                 status='pending'):
+        self.id = id
         self.authy_id = authy_id
         self.send_to = send_to
         self.amount = amount
+        self.push_id = push_id
         self.status = status
     
     def __repr__(self):

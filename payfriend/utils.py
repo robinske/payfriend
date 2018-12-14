@@ -1,7 +1,7 @@
 import phonenumbers
 from authy.api import AuthyApiClient
 from flask import current_app as app
-from flask import flash, g, request
+from flask import flash, g, request, session
 
 
 def parse_phone_number(full_phone):
@@ -90,6 +90,7 @@ def send_sms_auth(payment):
                                and errors dict (if unsuccessful)
     """
     api = get_authy_client()
+    session['payment_id'] = payment.id
     options = {
         'force': True,
         'action': payment.id,
@@ -106,7 +107,7 @@ def send_sms_auth(payment):
         return False
 
 
-def check_sms_auth(authy_id, request_id, code):
+def check_sms_auth(authy_id, payment_id, code):
     """
     Validates an one time password (OTP)
     """
@@ -114,7 +115,7 @@ def check_sms_auth(authy_id, request_id, code):
     try: 
         options = {
             'force': True,
-            'action': request_id,
+            'action': payment_id,
         }
         resp = api.tokens.verify(authy_id, code, options)
         if resp.ok():
@@ -132,8 +133,8 @@ def send_push_auth(authy_id_str, send_to, amount):
     """
     Sends a push authorization with payment details to the user's Authy app
 
-    :returns (request_id, errors): tuple of request_id (if successful)
-                                   and errors dict (if unsuccessful)
+    :returns (push_id, errors): tuple of push_id (if successful)
+                                and errors dict (if unsuccessful)
     """
     details = {
         "Sending to": send_to,
@@ -158,8 +159,8 @@ def send_push_auth(authy_id_str, send_to, amount):
     )
 
     if resp.ok():
-        request_id = resp.content['approval_request']['uuid']
-        return (request_id, {})
+        push_id = resp.content['approval_request']['uuid']
+        return (push_id, {})
     else:
         flash(resp.errors()['message'])
         return (None, resp.errors())
