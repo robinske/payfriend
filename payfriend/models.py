@@ -11,7 +11,7 @@ class User(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     email = db.Column(db.String(64), unique=True, index=True)
     password_hash = db.Column(db.String(128))
-    phone_number = db.Column(db.String(30))
+    phone_number = db.Column(db.String(30), unique=True)
     authy_id = db.Column(db.Integer)
 
     def __init__(self, email, password, phone_number):

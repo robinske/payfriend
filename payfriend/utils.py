@@ -82,7 +82,7 @@ def create_authy_user(email, country_code, phone):
         return None
 
 
-def send_sms_auth(authy_id, request_id):
+def send_sms_auth(payment):
     """
     Sends an SMS one time password (OTP) to the user's phone_number
 
@@ -92,10 +92,12 @@ def send_sms_auth(authy_id, request_id):
     api = get_authy_client()
     options = {
         'force': True,
-        'action': request_id,
-        'action_message': 'Payment Verification Code'
+        'action': payment.id,
+        'action_message': 'Verify Payment to {} for {}'.format(
+            payment.send_to,
+            payment.amount)
     }
-    resp = api.users.request_sms(authy_id, options)
+    resp = api.users.request_sms(payment.authy_id, options)
     if resp.ok():
         flash(resp.content['message'])
         return True

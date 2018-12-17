@@ -49,6 +49,25 @@ def update_payment_status(request_id, status):
     db.session.commit()
 
 
+def get_user_payments(email):
+    user_payments = db.session.query(Payment, User) \
+        .join(User) \
+        .filter((User.email == email)) \
+        .all()
+
+    payments = []
+    for (payment, user) in user_payments:
+        payments.append({
+            "email": user.email,
+            "id": payment.id,
+            "send_to": payment.send_to,
+            "amount": payment.amount,
+            "status": payment.status
+        })
+    
+    return payments
+
+
 @bp.route('/callback', methods=["POST"])
 @verify_authy_request
 def callback():
@@ -105,21 +124,7 @@ def send():
 @login_required
 @display_flash_messages
 def list_payments():
-    user_payments = db.session.query(Payment, User) \
-        .join(User) \
-        .filter_by(email=g.user.email) \
-        .all()
-
-    payments = []
-    for (payment, user) in user_payments:
-        payments.append({
-            "email": user.email,
-            "id": payment.id,
-            "send_to": payment.send_to,
-            "amount": payment.amount,
-            "status": payment.status
-        })
-
+    payments = get_user_payments(g.user.email)
     return render_template('payments/list.html', payments=payments)
 
 
@@ -139,8 +144,9 @@ def sms_auth():
 
     request_id = request.form['request_id']
     session['request_id'] = request_id
+    payment = Payment.query.get(request_id)
     
-    if utils.send_sms_auth(g.user.authy_id, request_id):
+    if utils.send_sms_auth(payment):
         return redirect(url_for('auth.verify'))
     else:
         return redirect(url_for('payments.send'))
