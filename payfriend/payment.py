@@ -40,10 +40,13 @@ def load_logged_in_user():
         g.user = None
 
 
-def update_payment_status(payment_id, status):
-    payment = Payment.query.get(payment_id)
-    if not payment:
-        abort(404)
+def update_payment_status(payment, status):
+    # once a payment status has been set, don't allow that to change
+    # this requires a new transaction in order to be PSD2 compliant
+    if payment.status != 'pending':
+        flash("Error: payment request was already {}. Please start a new transaction.".format(
+            payment.status))
+        return redirect(url_for('payments.list_payments'))
 
     payment.status = status
     db.session.commit()
@@ -79,7 +82,7 @@ def callback():
     status = request.json.get('status')
     payment = Payment.query.filter_by(push_id=push_id).first()
 
-    update_payment_status(payment.id, status)
+    update_payment_status(payment, status)
     return ('', 200)
 
 
@@ -133,8 +136,12 @@ def list_payments():
 
 
 def check_sms_auth(authy_id, payment_id, code):
+    """
+    Validates an SMS OTP.
+    """
     if utils.check_sms_auth(g.user.authy_id, payment_id, code):
-        update_payment_status(payment_id, 'approved')
+        payment = Payment.query.get(payment_id)
+        update_payment_status(payment, 'approved')
         return redirect(url_for('payments.list_payments'))
     else:
         abort(400)

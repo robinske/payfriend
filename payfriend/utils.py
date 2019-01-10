@@ -119,7 +119,6 @@ def check_sms_auth(authy_id, payment_id, code):
         }
         resp = api.tokens.verify(authy_id, code, options)
         if resp.ok():
-            flash(resp.content['message'])
             return True
         else:
             flash(resp.errors()['message'])
