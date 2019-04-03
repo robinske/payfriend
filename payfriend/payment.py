@@ -135,11 +135,11 @@ def list_payments():
     return render_template('payments/list.html', payments=payments)
 
 
-def check_sms_auth(authy_id, payment_id, code):
+def check_sms_auth(authy_id, payment_id, action, code):
     """
     Validates an SMS OTP.
     """
-    if utils.check_sms_auth(g.user.authy_id, payment_id, code):
+    if utils.check_sms_auth(g.user.authy_id, action, code):
         payment = Payment.query.get(payment_id)
         update_payment_status(payment, 'approved')
         return redirect(url_for('payments.list_payments'))

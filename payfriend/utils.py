@@ -90,10 +90,12 @@ def send_sms_auth(payment):
                                and errors dict (if unsuccessful)
     """
     api = get_authy_client()
+    action = "{}|{}".format(payment.send_to, payment.amount)
     session['payment_id'] = payment.id
+    session['action'] = action
     options = {
         'force': True,
-        'action': payment.id,
+        'action': action,
         'action_message': 'Verify Payment to {} for {}'.format(
             payment.send_to,
             payment.amount)
@@ -107,7 +109,7 @@ def send_sms_auth(payment):
         return False
 
 
-def check_sms_auth(authy_id, payment_id, code):
+def check_sms_auth(authy_id, action, code):
     """
     Validates an one time password (OTP)
     """
@@ -115,7 +117,7 @@ def check_sms_auth(authy_id, payment_id, code):
     try: 
         options = {
             'force': True,
-            'action': payment_id,
+            'action': action,
         }
         resp = api.tokens.verify(authy_id, code, options)
         if resp.ok():

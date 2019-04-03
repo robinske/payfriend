@@ -100,7 +100,8 @@ def verify():
                 return handle_verified_user(email, country_code, phone, code)
         else:
             payment_id = session['payment_id']
-            return check_sms_auth(g.user.authy_id, payment_id, code)
+            action = session['action']
+            return check_sms_auth(g.user.authy_id, payment_id, action, code)
     return render_template('auth/verify.html', form=form)
 
 
